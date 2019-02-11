@@ -18,6 +18,8 @@ from sklearn.preprocessing import OneHotEncoder
 ##
 
 
+restrictImports = True # restricts video import to 100 videos 
+
 # Load Paths
 videoDataPath           = 'F:\\Datasets\\20bn-jester-v1\\'
 labelListPath           = 'F:\\Datasets\\jester-v1-labels.csv'
@@ -25,10 +27,10 @@ trainMetaDataPath       = 'F:\\Datasets\\jester-v1-train.csv'
 validateMetaDataPath    = 'F:\\Datasets\\jester-v1-validation.csv'
 
 # Save Paths
-trainLabelPath      = 'DeepLearningModel\\Dataset\\train_label.pkl'
-trainFeaturePath    = 'DeepLearningModel\\Dataset\\train_feature.npy'
-validateLabelPath   = 'DeepLearningModel\\Dataset\\validate_label.pkl'
-validateFeaturePath = 'DeepLearningModel\\Dataset\\validate_feature.npy'
+trainLabelPath      = 'F:\\Datasets\\Preprocessed\\train_label.pkl'
+trainFeaturePath    = 'F:\\Datasets\\Preprocessed\\train_feature.npy'
+validateLabelPath   = 'F:\\Datasets\\Preprocessed\\validate_label.pkl'
+validateFeaturePath = 'F:\\Datasets\\Preprocessed\\validate_feature.npy'
 
 onehot_encoder = OneHotEncoder(sparse=False)
 IMG_HEIGHT = 100
@@ -44,11 +46,15 @@ def load_Metadata(path):
 
 def load_videos(videoIds):
     video_set = []
+    nVideos = videoIds.shape[0]
 
-    for videoId in videoIds:
+    for counter, videoId in enumerate(videoIds, 1):
+        if restrictImports and counter == 100:
+            break
+
+        print('importing video #', counter, ' /', nVideos)
         directory = os.path.join(videoDataPath, str(videoId))
-
-        video = []
+        video = []        
 
         for image in os.listdir(directory):
             image_values = PIL_Image.open(os.path.join(directory, image))
