@@ -1,0 +1,3 @@
+# Numpy array and Pickle files
+*.npy
+*.pkl
