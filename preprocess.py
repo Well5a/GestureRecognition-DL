@@ -2,34 +2,43 @@ import numpy as np
 import pandas as pd
 import os
 from PIL import Image as PIL_Image
+from sklearn.preprocessing import OneHotEncoder
 
 
 ##
-#   Creates a dataset that can be used for training from the 20BN-Jester dataset.
-#   Two sets are created: a feature set and a label set, both mapped to the correspondend ID.
+#   Creates datasets that can be used for training and validating the 20BN-Jester dataset.
+#   Two sets are created each: a feature set and a label set, both mapped to the correspondend ID of the sample.
 #   The features are saved as a numpy array, the labels as a pandas dataframe.
-#   The train data is ordered on the file system.
-#   Every image is located within a folder that is named after the ID of the video.
+#   The data is ordered on the file system in folders named after the sample ID.
 #   An external CSV file maps id to label of the video (metadata).
-#   Labels are one hot encoded with pandas get_dummies function.
+#   Labels are one hot encoded, images are resized to a specified size.
 ##
 
 
-# Paths
-labelListPath = 'F:\\Datasets\\jester-v1-labels.csv'
-trainMetaDataPath = 'F:\\Datasets\\jester-v1-train.csv'
-trainDataPath = 'F:\\Datasets\\20bn-jester-v1\\'
+# Load Paths
+videoDataPath           = 'F:\\Datasets\\20bn-jester-v1\\'
+labelListPath           = 'F:\\Datasets\\jester-v1-labels.csv'
+trainMetaDataPath       = 'F:\\Datasets\\jester-v1-train.csv'
+validateMetaDataPath    = 'F:\\Datasets\\jester-v1-validation.csv'
 
-trainLabelPath = 'DeepLearningModel\\Dataset\\train_label.pkl'
-trainFeaturePath = 'DeepLearningModel\\Dataset\\train_feature.npy'
+# Save Paths
+trainLabelPath      = 'DeepLearningModel\\Dataset\\train_label.pkl'
+trainFeaturePath    = 'DeepLearningModel\\Dataset\\train_feature.npy'
+validateLabelPath   = 'DeepLearningModel\\Dataset\\validate_label.pkl'
+validateFeaturePath = 'DeepLearningModel\\Dataset\\validate_feature.npy'
 
-# Image Size
+onehot_encoder = OneHotEncoder(sparse=False)
 IMG_HEIGHT = 100
 IMG_WIDTH = 150
 
-saveLabels = False
-saveFeatures = True
 
+def fitOneHotEncoder():
+    dataset = pd.read_csv(labelListPath, header=-1)
+    labels = dataset.values
+    onehot_encoder.fit(labels)
+
+def load_Metadata(path):
+    return pd.read_csv(path, delimiter=';', header=None, index_col=0, names=['gesture'])
 
 def load_videos(videoIds):
     video_set = []
@@ -38,7 +47,7 @@ def load_videos(videoIds):
     videoCount = videoIds.shape[0]
 
     for videoId in videoIds:
-        directory = os.path.join(trainDataPath, str(videoId))
+        directory = os.path.join(videoDataPath, str(videoId))
 
         #test
         print('importing video #', i, ' /', videoCount)
@@ -60,18 +69,19 @@ def load_videos(videoIds):
  
     return np.asarray(video_set) 
 
+def createDataset(metaDataPath, labelPath, featurePath):
+    metaData = load_Metadata(metaDataPath)
 
-trainMetaData = pd.read_csv(trainMetaDataPath, delimiter=';', header=None, index_col=0, names=['gesture'])
-train_videoIDs = trainMetaData.index.values
+    label_set = pd.DataFrame(index=metaData.index.values, data=onehot_encoder.transform(metaData.values))
+    label_set.to_pickle(labelPath)
+    print("saved labels to ", labelPath)
 
-# Labels
-train_labels = pd.get_dummies(trainMetaData, prefix=['gesture'])
-if(saveLabels):
-    train_labels.to_pickle(trainLabelPath)
-    print("saved train labels to ", trainLabelPath)
+    feature_set = load_videos(metaData.index.values)
+    np.save(featurePath, feature_set)
+    print("saved features to ", featurePath)
 
-# Features
-train_features = load_videos(train_videoIDs)
-if(saveFeatures):
-    np.save(trainFeaturePath, train_features)
-    print("saved train features to ", trainFeaturePath)
+
+fitOneHotEncoder()
+
+createDataset(trainMetaDataPath, trainLabelPath, trainFeaturePath)
+createDataset(validateMetaDataPath, validateLabelPath, validateFeaturePath)
