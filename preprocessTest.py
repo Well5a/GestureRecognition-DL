@@ -37,7 +37,8 @@ IMG_WIDTH = 150
 
 def fitOneHotEncoder():
     dataset = pd.read_csv(labelListPath, header=-1)
-    onehot_encoder.fit(dataset.values)
+    labels = dataset.values
+    onehot_encoder.fit(labels)
 
 def load_Metadata(path):
     return pd.read_csv(path, delimiter=';', header=None, index_col=0, names=['gesture'])
@@ -45,8 +46,18 @@ def load_Metadata(path):
 def load_videos(videoIds):
     video_set = []
 
+    i = 0 #test
+    videoCount = videoIds.shape[0]
+
     for videoId in videoIds:
         directory = os.path.join(videoDataPath, str(videoId))
+
+        #test
+        print('importing video #', i, ' /', videoCount)
+        if i == 100:
+            break
+        i += 1
+        #test
 
         video = []
 

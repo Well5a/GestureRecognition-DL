@@ -15,5 +15,7 @@ trainFeaturePath = 'DeepLearningModel\\Dataset\\train_feature.npy'
 
 train_features = np.load(trainFeaturePath)
 # print(train_features)
+
+print('0', train_features[0])
 print('1', train_features[0][0])
-print('2', train_features[0][1])
+print('2', train_features[0][0][0])
