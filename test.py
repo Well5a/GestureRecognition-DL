@@ -1,5 +1,5 @@
-import numpy as np
 import pandas as pd
+import numpy as np
 from PIL import Image as PIL_Image# used for loading images
 import os # used for navigating to image path
 import imageio # used for writing images
@@ -9,16 +9,36 @@ trainFeaturePath    = 'F:\\Datasets\\Preprocessed\\train_feature.npy'
 validateLabelPath   = 'F:\\Datasets\\Preprocessed\\validate_label.pkl'
 validateFeaturePath = 'F:\\Datasets\\Preprocessed\\validate_feature.npy'
 
+# Load Paths
+encoderPath             = 'DeepLearningModel\\Encoder\\oneHotEncoder.pkl'
+videoDataPath           = 'F:\\Datasets\\20bn-jester-v1\\'
+trainMetaDataPath       = 'F:\\Datasets\\jester-v1-train.csv'
+validateMetaDataPath    = 'F:\\Datasets\\jester-v1-validation.csv'
 
 # train_label = pd.read_pickle(trainLabelPath)
 # print(train_label)
 
-train_features = np.load(trainFeaturePath)
-validation_Features = np.load(validateFeaturePath)
+# train_features = np.load(trainFeaturePath)
+# validation_Features = np.load(validateFeaturePath)
 
 # print('0', train_features[0])
 # print('1', train_features[0][0])
 # print('2', train_features[0][0][0])
 
-print(train_features.shape)
-print(validation_Features.shape)
+# print(train_features.shape)
+# print(validation_Features.shape)
+
+# a = [[1,2,3],[4,5,6],[7,8,9]]
+
+# indices = np.arange(2)
+# print(indices)
+
+test = []
+metaData = pd.read_csv(trainMetaDataPath, delimiter=';', header=None, index_col=0, names=['gesture'])
+print(metaData)
+videoIds = metaData.index.values
+for videoId in videoIds:
+    if len(test) > 15: break
+    test.append(metaData.at[videoId, 'gesture'])
+
+print(test)

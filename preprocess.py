@@ -19,7 +19,6 @@ from sklearn.externals import joblib
 ##
 
 restrictImports = 100 # restricts video import to value (set to high value for all videos >1Mio)
-limitFrames = 30
 
 # Load Paths
 encoderPath             = 'DeepLearningModel\\Encoder\\oneHotEncoder.pkl'
@@ -36,6 +35,7 @@ validateFeaturePath = 'F:\\Datasets\\Preprocessed\\validate_feature.npy'
 ONEHOT_ENCODER = joblib.load(encoderPath)
 IMG_HEIGHT = 100
 IMG_WIDTH = 150
+NFRAMES = 30
 
 
 def load_videos(videoIds):
@@ -49,10 +49,10 @@ def load_videos(videoIds):
         print('importing video #', counterVideo, ' /', nVideos)
         directory = os.path.join(videoDataPath, str(videoId))
 
-        if len(os.listdir(directory)) >= limitFrames: # don't use if video length is too small        
+        if len(os.listdir(directory)) >= NFRAMES: # don't use if video length is too small        
             video = []    
             for counterImage, image in enumerate(os.listdir(directory), 1):   
-                if counterImage > limitFrames: break             
+                if counterImage > NFRAMES: break             
                 image_values = PIL_Image.open(os.path.join(directory, image))
                 image_values = image_values.convert('L') # L: converts to greyscale
                 image_values = image_values.resize((IMG_WIDTH, IMG_HEIGHT), PIL_Image.ANTIALIAS)
