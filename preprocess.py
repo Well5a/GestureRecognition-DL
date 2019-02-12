@@ -3,6 +3,7 @@ import pandas as pd
 import os
 from PIL import Image as PIL_Image
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.externals import joblib
 
 
 ##
@@ -17,12 +18,11 @@ from sklearn.preprocessing import OneHotEncoder
 #   set[0][0][0] -> first image/frame of first sample video
 ##
 
-
-restrictImports = True # restricts video import to 100 videos 
+restrictImports = 100 # restricts video import to value (set to high value for all videos >1Mio)
 
 # Load Paths
+encoderPath             = 'DeepLearningModel\\Encoder\\oneHotEncoder.pkl'
 videoDataPath           = 'F:\\Datasets\\20bn-jester-v1\\'
-labelListPath           = 'F:\\Datasets\\jester-v1-labels.csv'
 trainMetaDataPath       = 'F:\\Datasets\\jester-v1-train.csv'
 validateMetaDataPath    = 'F:\\Datasets\\jester-v1-validation.csv'
 
@@ -32,14 +32,10 @@ trainFeaturePath    = 'F:\\Datasets\\Preprocessed\\train_feature.npy'
 validateLabelPath   = 'F:\\Datasets\\Preprocessed\\validate_label.pkl'
 validateFeaturePath = 'F:\\Datasets\\Preprocessed\\validate_feature.npy'
 
-onehot_encoder = OneHotEncoder(sparse=False)
+ONEHOT_ENCODER = joblib.load(encoderPath)
 IMG_HEIGHT = 100
 IMG_WIDTH = 150
 
-
-def fitOneHotEncoder():
-    dataset = pd.read_csv(labelListPath, header=-1)
-    onehot_encoder.fit(dataset.values)
 
 def load_Metadata(path):
     return pd.read_csv(path, delimiter=';', header=None, index_col=0, names=['gesture'])
@@ -49,7 +45,7 @@ def load_videos(videoIds):
     nVideos = videoIds.shape[0]
 
     for counter, videoId in enumerate(videoIds, 1):
-        if restrictImports and counter == 100:
+        if counter == restrictImports:
             break
 
         print('importing video #', counter, ' /', nVideos)
@@ -70,7 +66,7 @@ def load_videos(videoIds):
 def createDataset(metaDataPath, labelPath, featurePath):
     metaData = load_Metadata(metaDataPath)
 
-    label_set = pd.DataFrame(index=metaData.index.values, data=onehot_encoder.transform(metaData.values))
+    label_set = pd.DataFrame(index=metaData.index.values, data=ONEHOT_ENCODER.transform(metaData.values))
     label_set.to_pickle(labelPath)
     print("saved labels to ", labelPath)
 
@@ -78,8 +74,6 @@ def createDataset(metaDataPath, labelPath, featurePath):
     np.save(featurePath, feature_set)
     print("saved features to ", featurePath)
 
-
-fitOneHotEncoder()
 
 createDataset(trainMetaDataPath, trainLabelPath, trainFeaturePath)
 createDataset(validateMetaDataPath, validateLabelPath, validateFeaturePath)
