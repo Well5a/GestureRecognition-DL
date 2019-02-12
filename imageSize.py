@@ -62,13 +62,32 @@ def load_training_data(id):
 
     return train_data
 
+def getFrameNumbers():
+    maxFrames = 0
+    minFrames = 40
+    avgFrames = 0
+
+    for i in range(1, 1000):
+        directory = DIR + '\\' + str(i)
+        current = len(os.listdir(directory))
+        avgFrames += current
+        if current > maxFrames:
+            maxFrames = current
+        elif current < minFrames:
+            minFrames = current
+
+    avgFrames /= 1000
+    print('maxFrames: %d | minFrames: %d | avgFrames: %d' % (maxFrames, minFrames, avgFrames))
+
+
+getFrameNumbers()
 
 #get_size_statistics()
 
-train_data = load_training_data(13)
+# train_data = load_training_data(13)
 
-print(train_data[20][0])
+# print(train_data[20][0])
 
-pyplot.imshow(train_data[20][0], cmap = 'gist_gray')
+# pyplot.imshow(train_data[20][0], cmap = 'gist_gray')
 # pyplot.show()
 

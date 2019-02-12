@@ -10,11 +10,15 @@ validateLabelPath   = 'F:\\Datasets\\Preprocessed\\validate_label.pkl'
 validateFeaturePath = 'F:\\Datasets\\Preprocessed\\validate_feature.npy'
 
 
-train_label = pd.read_pickle(trainLabelPath)
-print(train_label)
+# train_label = pd.read_pickle(trainLabelPath)
+# print(train_label)
 
-# train_features = np.load(trainFeaturePath)
+train_features = np.load(trainFeaturePath)
+validation_Features = np.load(validateFeaturePath)
 
 # print('0', train_features[0])
 # print('1', train_features[0][0])
 # print('2', train_features[0][0][0])
+
+print(train_features.shape)
+print(validation_Features.shape)

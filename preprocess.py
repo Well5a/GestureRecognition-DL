@@ -19,6 +19,7 @@ from sklearn.externals import joblib
 ##
 
 restrictImports = 100 # restricts video import to value (set to high value for all videos >1Mio)
+limitFrames = 30
 
 # Load Paths
 encoderPath             = 'DeepLearningModel\\Encoder\\oneHotEncoder.pkl'
@@ -37,34 +38,34 @@ IMG_HEIGHT = 100
 IMG_WIDTH = 150
 
 
-def load_Metadata(path):
-    return pd.read_csv(path, delimiter=';', header=None, index_col=0, names=['gesture'])
-
 def load_videos(videoIds):
     video_set = []
     nVideos = videoIds.shape[0]
 
-    for counter, videoId in enumerate(videoIds, 1):
-        if counter == restrictImports:
+    for counterVideo, videoId in enumerate(videoIds, 1):
+        if len(video_set) == restrictImports:
             break
 
-        print('importing video #', counter, ' /', nVideos)
+        print('importing video #', counterVideo, ' /', nVideos)
         directory = os.path.join(videoDataPath, str(videoId))
-        video = []        
 
-        for image in os.listdir(directory):
-            image_values = PIL_Image.open(os.path.join(directory, image))
-            image_values = image_values.convert('L') # L: converts to greyscale
-            image_values = image_values.resize((IMG_WIDTH, IMG_HEIGHT), PIL_Image.ANTIALIAS)
+        if len(os.listdir(directory)) >= limitFrames: # don't use if video length is too small        
+            video = []    
+            for counterImage, image in enumerate(os.listdir(directory), 1):   
+                if counterImage > limitFrames: break             
+                image_values = PIL_Image.open(os.path.join(directory, image))
+                image_values = image_values.convert('L') # L: converts to greyscale
+                image_values = image_values.resize((IMG_WIDTH, IMG_HEIGHT), PIL_Image.ANTIALIAS)
+                video.append(np.asarray(image_values))
 
-            video.append(np.asarray(image_values))
-       
-        video_set.append([np.asarray(video), videoId])
- 
+            video_set.append([np.asarray(video), videoId])
+        else:
+            print("skipped video # %d with length %d" % (counterVideo, len(os.listdir(directory))))
+        
     return np.asarray(video_set) 
 
 def createDataset(metaDataPath, labelPath, featurePath):
-    metaData = load_Metadata(metaDataPath)
+    metaData = pd.read_csv(metaDataPath, delimiter=';', header=None, index_col=0, names=['gesture'])
 
     label_set = pd.DataFrame(index=metaData.index.values, data=ONEHOT_ENCODER.transform(metaData.values))
     label_set.to_pickle(labelPath)
