@@ -19,26 +19,18 @@ validateMetaDataPath    = 'F:\\Datasets\\jester-v1-validation.csv'
 # print(train_label)
 
 # train_features = np.load(trainFeaturePath)
-# validation_Features = np.load(validateFeaturePath)
+# validation_features = np.load(validateFeaturePath)
 
 # print('0', train_features[0])
 # print('1', train_features[0][0])
 # print('2', train_features[0][0][0])
 
 # print(train_features.shape)
-# print(validation_Features.shape)
+# print(validation_features.shape)
 
 # a = [[1,2,3],[4,5,6],[7,8,9]]
 
 # indices = np.arange(2)
 # print(indices)
 
-test = []
 metaData = pd.read_csv(trainMetaDataPath, delimiter=';', header=None, index_col=0, names=['gesture'])
-print(metaData)
-videoIds = metaData.index.values
-for videoId in videoIds:
-    if len(test) > 15: break
-    test.append(metaData.at[videoId, 'gesture'])
-
-print(test)

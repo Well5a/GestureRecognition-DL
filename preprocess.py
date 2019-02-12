@@ -35,7 +35,7 @@ validateFeaturePath = 'F:\\Datasets\\Preprocessed\\validate_feature.npy'
 ONEHOT_ENCODER = joblib.load(encoderPath)
 IMG_HEIGHT = 100
 IMG_WIDTH = 150
-NFRAMES = 30
+NUM_FRAMES = 30
 
 
 def load_videos(videoIds):
@@ -49,10 +49,12 @@ def load_videos(videoIds):
         print('importing video #', counterVideo, ' /', nVideos)
         directory = os.path.join(videoDataPath, str(videoId))
 
-        if len(os.listdir(directory)) >= NFRAMES: # don't use if video length is too small        
+        if len(os.listdir(directory)) >= NUM_FRAMES
+    : # don't use if video length is too small        
             video = []    
             for counterImage, image in enumerate(os.listdir(directory), 1):   
-                if counterImage > NFRAMES: break             
+                if counterImage > NUM_FRAMES
+            : break             
                 image_values = PIL_Image.open(os.path.join(directory, image))
                 image_values = image_values.convert('L') # L: converts to greyscale
                 image_values = image_values.resize((IMG_WIDTH, IMG_HEIGHT), PIL_Image.ANTIALIAS)

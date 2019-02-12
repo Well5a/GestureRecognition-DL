@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from PIL import Image # used for loading images
 from matplotlib import pyplot
 import os # used for navigating to image path
@@ -10,6 +11,10 @@ import imageio # used for writing images
 #   e.g. average size
 ##
 
+encoderPath             = 'DeepLearningModel\\Encoder\\oneHotEncoder.pkl'
+videoDataPath           = 'F:\\Datasets\\20bn-jester-v1\\'
+trainMetaDataPath       = 'F:\\Datasets\\jester-v1-train.csv'
+validateMetaDataPath    = 'F:\\Datasets\\jester-v1-validation.csv'
 
 DIR = 'F:\\Datasets\\20bn-jester-v1'
 IMG_HEIGHT = 100
@@ -79,8 +84,25 @@ def getFrameNumbers():
     avgFrames /= 1000
     print('maxFrames: %d | minFrames: %d | avgFrames: %d' % (maxFrames, minFrames, avgFrames))
 
+# videos that are longer than a certain number of frames
+def getUsableVideos(path, limit):
+    metaData = pd.read_csv(path, delimiter=';', header=None, index_col=0, names=['gesture'])
+    videoIds = metaData.index.values
+    nVideos = videoIds.shape[0]
+    nVideosOverFrameLimit = 0
+    
+    for counterVideo, videoId in enumerate(videoIds, 1):
+        print('testing video #', counterVideo, ' /', nVideos)
+        directory = os.path.join(videoDataPath, str(videoId))
+        nFrames = len(os.listdir(directory))
+        if nFrames >= limit:
+            nVideosOverFrameLimit += 1
 
-getFrameNumbers()
+    print("usabel videos over limit %d for %s: %d" % (limit, path, nVideosOverFrameLimit))
+
+
+
+getUsableVideos(trainMetaDataPath, 30)
 
 #get_size_statistics()
 
