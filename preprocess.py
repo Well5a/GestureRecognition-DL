@@ -49,14 +49,13 @@ def load_videos(videoIds):
         print('importing video #', counterVideo, ' /', nVideos)
         directory = os.path.join(videoDataPath, str(videoId))
 
-        if len(os.listdir(directory)) >= NUM_FRAMES
-    : # don't use if video length is too small        
+        if len(os.listdir(directory)) >= NUM_FRAMES: # don't use if video length is too small        
             video = []    
             for counterImage, image in enumerate(os.listdir(directory), 1):   
-                if counterImage > NUM_FRAMES
-            : break             
+                if counterImage > NUM_FRAMES: 
+                    break             
                 image_values = PIL_Image.open(os.path.join(directory, image))
-                image_values = image_values.convert('L') # L: converts to greyscale
+                image_values = image_values.convert('RGB') # L: converts to greyscale
                 image_values = image_values.resize((IMG_WIDTH, IMG_HEIGHT), PIL_Image.ANTIALIAS)
                 video.append(np.asarray(image_values))
 
@@ -70,12 +69,13 @@ def createDataset(metaDataPath, labelPath, featurePath):
     metaData = pd.read_csv(metaDataPath, delimiter=';', header=None, index_col=0, names=['gesture'])
 
     label_set = pd.DataFrame(index=metaData.index.values, data=ONEHOT_ENCODER.transform(metaData.values))
-    label_set.to_pickle(labelPath)
-    print("saved labels to ", labelPath)
+    # label_set.to_pickle(labelPath)
+    # print("saved labels to ", labelPath)
 
     feature_set = load_videos(metaData.index.values)
-    np.save(featurePath, feature_set)
-    print("saved features to ", featurePath)
+    print(feature_set)
+    # np.save(featurePath, feature_set)
+    # print("saved features to ", featurePath)
 
 
 createDataset(trainMetaDataPath, trainLabelPath, trainFeaturePath)

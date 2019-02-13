@@ -13,6 +13,7 @@ from keras.preprocessing.image import load_img, img_to_array
 from keras.layers.core import Dense, Dropout, Flatten, Activation
 from keras.layers.convolutional import Conv2D, MaxPooling2D
 from keras.layers.recurrent import LSTM
+from keras.layers.pooling import GlobalAveragePooling1D
 from keras.utils import plot_model
 
 
@@ -35,15 +36,12 @@ IMG_HEIGHT = 100
 IMG_WIDTH = 150
 NUM_FRAMES = 30
 NUM_CLASSES = 27
-NUM_TRAIN_SAMPLES = 64 #116254
-NUM_VALIDATION_SAMPLES = 32
+NUM_TRAIN_SAMPLES = 1024 #116254
+NUM_VALIDATION_SAMPLES = 64
 
 # model params
-epochs = 3
+epochs = 10
 batchsize = 32
-num_train_batches_per_epoch = int(NUM_TRAIN_SAMPLES / batchsize)
-num_validation_batches_per_epoch = int(NUM_VALIDATION_SAMPLES / batchsize)
-
 
 def data_generator(featurePath, labelPath, batchsize, labelEncoder):
     metaData = pd.read_csv(labelPath, delimiter=';', header=None, index_col=0, names=['gesture'])
@@ -61,23 +59,26 @@ def data_generator(featurePath, labelPath, batchsize, labelEncoder):
                 for imageCounter, image in enumerate(os.listdir(directory), 1):   
                     if imageCounter > NUM_FRAMES: break # break if video length is too big        
                     image_values = PIL_Image.open(os.path.join(directory, image))
-                    image_values = image_values.convert('L') # L: converts to greyscale
+                    image_values = image_values.convert('RGB') # L: converts to greyscale | RGB 
                     image_values = image_values.resize((IMG_WIDTH, IMG_HEIGHT), PIL_Image.ANTIALIAS)
                     video.append(np.asarray(image_values))
 
                 features.append(np.asarray(video))
                 labels.append(metaData.at[videoId, 'gesture'])
-        labels = labelEncoder.transform(np.asarray(labels).reshape(-1, 1))
 
-        yield(np.asarray(features).reshape(batchsize, NUM_FRAMES, IMG_HEIGHT, IMG_WIDTH, 1), labels.reshape(batchsize, NUM_CLASSES, 1))
+        labels = labelEncoder.transform(np.asarray(labels).reshape(-1, 1))
+        features = np.asarray(features)
+        yield(features, labels)
 
 def build_model():
     model = Sequential()
-    model.add(TimeDistributed(Conv2D(32, (3, 3), padding='same'), input_shape=(NUM_FRAMES, IMG_HEIGHT, IMG_WIDTH, 1), name='Conv'))
+    model.add(TimeDistributed(Conv2D(32, (3, 3), padding='same'), input_shape=(NUM_FRAMES, IMG_HEIGHT, IMG_WIDTH, 3), name='Conv')) # shape = (frames, width, heigth, channel)
     model.add(TimeDistributed(MaxPooling2D(pool_size=(2, 2), name='MaxPooling')))
-    model.add(TimeDistributed(Flatten(), name='Flatten'))
+    model.add(TimeDistributed(Flatten(), name='Flatten_1'))
     model.add(LSTM(20, return_sequences=True, name='LSTM'))
-    model.add(TimeDistributed(Dense(NUM_CLASSES), name='Dense'))
+    model.add(TimeDistributed(Dense(NUM_CLASSES, activation='linear'), name='Dense'))
+    model.add(GlobalAveragePooling1D(name='average'))
+       
     model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
     return model
 
@@ -90,7 +91,7 @@ def plot_history(history):
     plt.title('model accuracy')
     plt.xlabel('epoch')
     plt.ylabel('accuracy')
-    plt.legend(loc="lower right")
+    plt.legend(loc="upper right")
     plt.savefig(modelSavePath+'model_accuracy.png')
 
     # loss
@@ -99,8 +100,9 @@ def plot_history(history):
     plt.title('model loss')
     plt.xlabel('epoch')
     plt.ylabel('loss')
-    plt.legend(loc='lower right')
+    plt.legend(loc='upper right')
     plt.savefig(modelSavePath+'model_loss.png')
+
 
 #Initialization
 oneHotEncoder = joblib.load(encoderPath)
@@ -112,11 +114,9 @@ num_validation_batches_per_epoch = int(NUM_VALIDATION_SAMPLES / batchsize)
 # Data
 train_batches = data_generator(videoDataPath, trainMetaDataPath, batchsize, oneHotEncoder)
 validation_batches = data_generator(videoDataPath, validateMetaDataPath, batchsize, oneHotEncoder)
-
+ 
 # Train
 history = model.fit_generator(train_batches, steps_per_epoch=num_train_batches_per_epoch, epochs=epochs, verbose=1, validation_data=validation_batches, validation_steps=num_validation_batches_per_epoch)
 plot_history(history)
-
-# print_result()
 
 print('done')
