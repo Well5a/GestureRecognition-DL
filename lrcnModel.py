@@ -20,8 +20,10 @@ from keras.utils import plot_model
 ##
 #   Trains a Deep Learning model on the 20bn-jester-v1 dataset.
 #   The model used is based on the idea of the lrcn, proposed in arXiv:1411.4389 [cs.CV]
-#   Because the dataset is large a data generator function is used.
-#   It imports the data in batches in parallel to the training and feeds it to the network periodically when new data is needed.
+#   Because the dataset is large a data generator function is used. It imports the data in batches in parallel to the training and feeds it to the network periodically when new data is needed.
+#   Shape of features: [batch, frame, height, width, channel]. The features are restricted to 30 frames per video and each frame is converted into a uniform size and uses RGB values. 
+#   Shape of labels: [batch, class]. The class is an one hot encoded vector.
+#   The model and training statistics are saved under 'modelSavePath'.
 ##
 
 # Paths
@@ -40,7 +42,7 @@ NUM_TRAIN_SAMPLES = 10240 #116254
 NUM_VALIDATION_SAMPLES = 640
 
 # model params
-epochs = 10
+epochs = 5
 batchsize = 32
 
 def data_generator(featurePath, labelPath, batchsize, labelEncoder):
@@ -49,12 +51,12 @@ def data_generator(featurePath, labelPath, batchsize, labelEncoder):
     
     while True:
         features = []
-        labels = []               
+        labels = []   
         
         while len(labels) < batchsize:  
-            videoId = next(videoIdIter)
+            videoId = next(videoIdIter)            
             directory = os.path.join(featurePath, str(videoId))
-            if len(os.listdir(directory)) >= NUM_FRAMES: # don't use if video length is too small        
+            if len(os.listdir(directory)) >= NUM_FRAMES: # don't use if video length is too small   
                 video = []    
                 for imageCounter, image in enumerate(os.listdir(directory), 1):   
                     if imageCounter > NUM_FRAMES: break # break if video length is too big        
@@ -66,8 +68,8 @@ def data_generator(featurePath, labelPath, batchsize, labelEncoder):
                 features.append(np.asarray(video))
                 labels.append(metaData.at[videoId, 'gesture'])
 
-        labels = labelEncoder.transform(np.asarray(labels).reshape(-1, 1))
         features = np.asarray(features)
+        labels = labelEncoder.transform(np.asarray(labels).reshape(-1, 1))
         yield(features, labels)
 
 def build_model():
@@ -84,7 +86,6 @@ def build_model():
 
 def plot_history(history):
     plot_model(model, to_file=modelSavePath+'model.png')
-
     # accuracy
     plt.plot(history.history['acc'],"o-",label="accuracy")
     plt.plot(history.history['val_acc'],"o-",label="val_acc")
@@ -93,7 +94,6 @@ def plot_history(history):
     plt.ylabel('accuracy')
     plt.legend(loc="upper right")
     plt.savefig(modelSavePath+'model_accuracy.png')
-
     # loss
     plt.plot(history.history['loss'],"o-",label="loss",)
     plt.plot(history.history['val_loss'],"o-",label="val_loss")
@@ -119,4 +119,5 @@ validation_batches = data_generator(videoDataPath, validateMetaDataPath, batchsi
 history = model.fit_generator(train_batches, steps_per_epoch=num_train_batches_per_epoch, epochs=epochs, verbose=1, validation_data=validation_batches, validation_steps=num_validation_batches_per_epoch)
 plot_history(history)
 
-print('done')
+model.save(modelSavePath+'model.h5')
+print("saved model at", modelSavePath)

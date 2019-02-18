@@ -3,3 +3,6 @@
 
 # Pickle files
 *.pkl
+
+# Model files
+*.h5
