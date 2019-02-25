@@ -38,12 +38,15 @@ IMG_HEIGHT = 100
 IMG_WIDTH = 150
 NUM_FRAMES = 30
 NUM_CLASSES = 27
-NUM_TRAIN_SAMPLES = 10240 #116254
+NUM_TRAIN_SAMPLES = 32#10240 #116254
 NUM_VALIDATION_SAMPLES = 640
 
 # model params
-epochs = 5
+epochs = 1#5
 batchsize = 32
+padding_mode = 'same' # valid = no padding, same = padding such that output = input
+num_filters = 32 # depth
+kernel_size = 3 # spatial extend (width and height of output)
 
 def data_generator(featurePath, labelPath, batchsize, labelEncoder):
     metaData = pd.read_csv(labelPath, delimiter=';', header=None, index_col=0, names=['gesture'])
@@ -74,7 +77,7 @@ def data_generator(featurePath, labelPath, batchsize, labelEncoder):
 
 def build_model():
     model = Sequential()
-    model.add(TimeDistributed(Conv2D(32, (3, 3), padding='same'), input_shape=(NUM_FRAMES, IMG_HEIGHT, IMG_WIDTH, 3), name='Conv')) # shape = (frames, width, heigth, channel)
+    model.add(TimeDistributed(Conv2D(num_filters, kernel_size, padding=padding_mode, data_format="channels_last"), input_shape=(NUM_FRAMES, IMG_HEIGHT, IMG_WIDTH, 3), name='Conv')) # shape = (frames, width, height, channel)
     model.add(TimeDistributed(MaxPooling2D(pool_size=(2, 2), name='MaxPooling')))
     model.add(TimeDistributed(Flatten(), name='Flatten_1'))
     model.add(LSTM(20, return_sequences=True, name='LSTM'))
