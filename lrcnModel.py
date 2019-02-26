@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
+from pathlib import Path
 from PIL import Image as PIL_Image
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.externals import joblib
@@ -27,11 +28,11 @@ from keras.utils import plot_model
 ##
 
 # Paths
-encoderPath             = 'DeepLearningModel\\Encoder\\oneHotEncoder.pkl'
-videoDataPath           = 'F:\\Datasets\\20bn-jester-v1\\'
-trainMetaDataPath       = 'F:\\Datasets\\jester-v1-train.csv'
-validateMetaDataPath    = 'F:\\Datasets\\jester-v1-validation.csv'
-modelSavePath           = 'DeepLearningModel//Model//'
+encoderPath             = Path('DeepLearningModel/Encoder/oneHotEncoder.pkl')
+videoDataPath           = Path('F:/Datasets/20bn-jester-v1/')
+trainMetaDataPath       = Path('F:/Datasets/jester-v1-train.csv')
+validateMetaDataPath    = Path('F:/Datasets/jester-v1-validation.csv')
+modelSavePath           = Path('DeepLearningModel/Model/')
 
 # data params
 IMG_HEIGHT = 100
@@ -44,7 +45,7 @@ NUM_VALIDATION_SAMPLES = 640
 # model params
 epochs = 1#5
 batchsize = 32
-padding_mode = 'same' # valid = no padding, same = padding such that output = input
+padding_mode = 'valid' # valid = no padding, same = padding such that output = input
 num_filters = 32 # depth
 kernel_size = 3 # spatial extend (width and height of output)
 
@@ -58,7 +59,7 @@ def data_generator(featurePath, labelPath, batchsize, labelEncoder):
         
         while len(labels) < batchsize:  
             videoId = next(videoIdIter)            
-            videoDirectory = os.path.join(featurePath, str(videoId))
+            videoDirectory = featurePath / str(videoId)
             if len(os.listdir(videoDirectory)) >= NUM_FRAMES: # don't use if video length is too small   
                 video = []    
                 for imageCounter, image in enumerate(os.listdir(videoDirectory), 1):   
@@ -88,7 +89,7 @@ def build_model():
     return model
 
 def plot_history(history):
-    plot_model(model, to_file=modelSavePath+'model.png')
+    plot_model(model, to_file=modelSavePath/'model.png')
     # accuracy
     plt.plot(history.history['acc'],"o-",label="accuracy")
     plt.plot(history.history['val_acc'],"o-",label="val_acc")
@@ -96,7 +97,7 @@ def plot_history(history):
     plt.xlabel('epoch')
     plt.ylabel('accuracy')
     plt.legend(loc="upper right")
-    plt.savefig(modelSavePath+'model_accuracy.png')
+    plt.savefig(modelSavePath/'model_accuracy.png')
     # loss
     plt.plot(history.history['loss'],"o-",label="loss",)
     plt.plot(history.history['val_loss'],"o-",label="val_loss")
@@ -104,7 +105,7 @@ def plot_history(history):
     plt.xlabel('epoch')
     plt.ylabel('loss')
     plt.legend(loc='upper right')
-    plt.savefig(modelSavePath+'model_loss.png')
+    plt.savefig(modelSavePath/'model_loss.png')
 
 
 #Initialization
@@ -122,5 +123,5 @@ validation_batches = data_generator(videoDataPath, validateMetaDataPath, batchsi
 history = model.fit_generator(train_batches, steps_per_epoch=num_train_batches_per_epoch, epochs=epochs, verbose=1, validation_data=validation_batches, validation_steps=num_validation_batches_per_epoch)
 plot_history(history)
 
-model.save(modelSavePath+'model.h5')
+model.save(os.path.join(modelSavePath, 'model.h5'))
 print("saved model at", modelSavePath)
