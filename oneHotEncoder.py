@@ -10,8 +10,8 @@ from sklearn.externals import joblib
 ##
 
 
-labelListPath = 'F:\\Datasets\\jester-v1-labels.csv'
-encoderSavePath = 'DeepLearningModel\\Encoder\\oneHotEncoder.pkl'
+labelListPath = 'C:\\Users\\mwe\\Desktop\\Gesture dataset\\jester-v1-labels.csv'
+encoderSavePath = 'C:\\Users\\mwe\\Documents\\GestureRecognition-DL\\Encoder\\oneHotEncoder.pkl'
 
 dataset = pd.read_csv(labelListPath, header=-1)
 
