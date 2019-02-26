@@ -16,22 +16,5 @@ videoDataPath           = 'F:\\Datasets\\20bn-jester-v1\\'
 trainMetaDataPath       = 'F:\\Datasets\\jester-v1-train.csv'
 validateMetaDataPath    = 'F:\\Datasets\\jester-v1-validation.csv'
 
-# train_label = pd.read_pickle(trainLabelPath)
-# print(train_label)
-
-# train_features = np.load(trainFeaturePath)
-# validation_features = np.load(validateFeaturePath)
-
-# print('0', train_features[0])
-# print('1', train_features[0][0])
-# print('2', train_features[0][0][0])
-
-# print(train_features.shape)
-# print(validation_features.shape)
-
-# a = [[1,2,3],[4,5,6],[7,8,9]]
-
-# indices = np.arange(2)
-# print(indices)
-
-metaData = pd.read_csv(trainMetaDataPath, delimiter=';', header=None, index_col=0, names=['gesture'])
+feature = np.load(videoDataPath+'1\\1.npy')
+print(feature.shape, feature)

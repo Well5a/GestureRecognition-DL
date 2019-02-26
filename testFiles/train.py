@@ -34,8 +34,6 @@ validateMetaDataPath    = 'F:\\Datasets\\jester-v1-validation.csv'
 modelSavePath           = 'DeepLearningModel//Model//'
 
 # data params
-IMG_HEIGHT = 100
-IMG_WIDTH = 150
 NUM_FRAMES = 30
 NUM_CLASSES = 27
 NUM_TRAIN_SAMPLES = 32#10240 #116254
@@ -58,18 +56,11 @@ def data_generator(featurePath, labelPath, batchsize, labelEncoder):
         
         while len(labels) < batchsize:  
             videoId = next(videoIdIter)            
-            videoDirectory = os.path.join(featurePath, str(videoId))
-            if len(os.listdir(videoDirectory)) >= NUM_FRAMES: # don't use if video length is too small   
-                video = []    
-                for imageCounter, image in enumerate(os.listdir(videoDirectory), 1):   
-                    if imageCounter > NUM_FRAMES: break # break if video length is too big        
-                    image_values = PIL_Image.open(os.path.join(videoDirectory, image))
-                    image_values = image_values.convert('RGB') # L: converts to greyscale | RGB 
-                    image_values = image_values.resize((IMG_WIDTH, IMG_HEIGHT), PIL_Image.ANTIALIAS)
-                    video.append(np.asarray(image_values))
-
-                features.append(np.asarray(video))
-                labels.append(metaData.at[videoId, 'gesture'])
+            videoDirectory = os.path.join(featurePath, str(videoId), str(videoId), '.npy')
+            video = np.load(videoDirectory)
+            if video.length != NUM_FRAMES: break                
+            features.append(video)
+            labels.append(metaData.at[videoId, 'gesture'])
 
         features = np.asarray(features)
         labels = labelEncoder.transform(np.asarray(labels).reshape(-1, 1))
