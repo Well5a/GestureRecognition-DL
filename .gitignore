@@ -6,3 +6,6 @@
 
 # Model files
 *.h5
+
+# VSCode
+.vscode
